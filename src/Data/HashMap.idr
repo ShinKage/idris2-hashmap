@@ -25,6 +25,11 @@ insert key val Empty = Trie $ singleton key val
 insert key val (Trie hamt) = Trie $ insert (==) key val hamt
 
 export
+insertWith : key -> val -> (val -> val -> val) -> HashMap key val -> HashMap key val
+insertWith key val f Empty = Trie $ singleton key val
+insertWith key val f (Trie hamt) = Trie $ insertModifying (==) key val (\(ka ** va), (kb ** vb) => (ka ** f va vb)) hamt
+
+export
 delete : key -> HashMap key val -> HashMap key val
 delete key Empty = Empty
 delete key (Trie hamt) = case delete (==) key hamt of
@@ -35,6 +40,10 @@ export
 foldWithKey : (f : k -> v -> acc -> acc) -> acc -> HashMap k v -> acc
 foldWithKey f z Empty = z
 foldWithKey f z (Trie hamt) = foldWithKey f z hamt
+
+export
+unionWith : (v -> v -> v) -> HashMap k v -> HashMap k v -> HashMap k v
+unionWith f hm0 hm1 = foldWithKey (\k, v => insertWith k v f) hm0 hm1
 
 export
 toList : HashMap k v -> List (k, v)
